@@ -1,23 +1,28 @@
 package main
 
 import (
-	"chat_room/entities"
-	"fmt"
+	"chat_room/infra"
+	"chat_room/internal/http"
+	"chat_room/room"
+	storage_room "chat_room/room/sqlite"
+	storage_user "chat_room/user/sqlite"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	u1 := entities.NewUser("Carlos")
-	u2 := entities.NewUser("Trufa")
-
-	r := entities.NewRoom("Room1")
-	err := r.AddMessage("Good morning!", *u1)
+	db, err := infra.NewDB()
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
-	r.AddUser(u1)
-	r.AddUser(u2)
-	r.AddMessage("Guau", *u2)
-	r.AddMessage("Guau", *u2)
-	fmt.Printf("Latest messages: %+v  \n", r.GetLatestMessages(5))
-	fmt.Printf("Room info: %+v", r.GetRoomInfo())
+
+	mr := gin.Default()
+
+	// Room
+	rr := storage_room.New(db)
+	ur := storage_user.New(db)
+	rs := room.NewService(rr, ur)
+	http.Handlers(rs, mr)
+
+	mr.Run(":3000")
 }
