@@ -99,6 +99,27 @@ func (s *Storage) SendMessage(m room.Message) error {
 	return nil
 }
 
-func (s *Storage) DeleteMessage(m string) error {
+func (s *Storage) DeleteMessage(id, userID string) error {
+	q := "DELETE FROM messages where id = ? and creator_id = ?;"
+	// TODO: Logs
+	_, err := s.DB.Exec(q, id, userID)
+	if err != nil {
+		return fmt.Errorf("Something went wrong deleting the mesage")
+	}
+
 	return nil
+}
+
+func (s *Storage) GetMessageForUser(id, userID string) (*room.Message, error) {
+	q := "SELECT id, content, creator_id, room_id, created_at FROM messages WHERE id = ? AND creator_id = ? LIMIT 1;"
+
+	// TODO: Logs
+	row := s.DB.QueryRow(q, id, userID)
+	var m room.Message
+	var err error
+	if err = row.Scan(&m.ID, &m.Content, &m.CreatorID, &m.RoomID, &m.CreatedAt); err == sql.ErrNoRows {
+		return nil, fmt.Errorf("Message not found")
+	}
+
+	return &m, nil
 }

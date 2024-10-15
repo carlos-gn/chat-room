@@ -109,6 +109,16 @@ func (s *RoomService) SendMessage(roomID, userID, message string) error {
 	return nil
 }
 
-func (s *RoomService) DeleteMessage(roomID, messageID string) error {
+func (s *RoomService) DeleteMessage(messageID, userID string) error {
+	m, err := s.rr.GetMessageForUser(messageID, userID)
+	if err != nil {
+		return err
+	}
+
+	err = s.rr.DeleteMessage(m.ID, userID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

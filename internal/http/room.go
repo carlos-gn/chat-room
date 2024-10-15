@@ -9,11 +9,13 @@ import (
 )
 
 func Handlers(u room.UseCase, r *gin.Engine) {
-	rr := r.Group("/room")
+	rr := r.Group("/rooms")
 	{
 		rr.POST("", createRoom(u))
-		rr.POST("/:roomID/member", addUser(u))
-		rr.POST("/:roomID/message", sendMessage(u))
+		rr.POST("/:roomID/members", addUser(u))
+		rr.POST("/:roomID/messages", sendMessage(u))
+		// We can pass the room id to improve the DB search here.
+		rr.DELETE("/messages/:messageID", deleteMessage(u))
 	}
 }
 
@@ -109,6 +111,35 @@ func sendMessage(u room.UseCase) gin.HandlerFunc {
 		userContext, _ := c.Get("user")
 		user := userContext.(user.User)
 		err := u.SendMessage(roomID, user.ID, i.Message)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+		})
+	}
+}
+
+func deleteMessage(u room.UseCase) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		messageID := c.Param("messageID")
+
+		if messageID == "" {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"success": false,
+				"message": "wrong payload",
+			})
+			return
+		}
+
+		// This can be in a "shared" method
+		userContext, _ := c.Get("user")
+		user := userContext.(user.User)
+		err := u.DeleteMessage(messageID, user.ID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,

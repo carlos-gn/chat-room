@@ -35,7 +35,8 @@ type RoomRepository interface {
 	Create(room Room) error
 	AddUser(roomID, userID string) error
 	SendMessage(message Message) error
-	DeleteMessage(messageID string) error
+	DeleteMessage(messageID, userID string) error
 	Get(roomID string) (*Room, error)
 	UserExists(roomID, userID string) (bool, error)
+	GetMessageForUser(messageID, userID string) (*Message, error)
 }
