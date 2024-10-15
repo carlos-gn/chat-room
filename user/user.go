@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"time"
 )
 
@@ -11,9 +12,9 @@ type User struct {
 }
 
 type UseCase interface {
-	Get(id string) (*User, error)
+	Get(ctx context.Context, id string) (*User, error)
 }
 
 type UserRepository interface {
-	Get(id string) (*User, error)
+	Get(ctx context.Context, id string) (*User, error)
 }

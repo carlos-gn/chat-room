@@ -34,7 +34,7 @@ func createRoom(u room.UseCase) gin.HandlerFunc {
 			})
 			return
 		}
-		id, err := u.Create(i.Name)
+		id, err := u.Create(c.Request.Context(), i.Name)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
@@ -71,7 +71,7 @@ func addUser(u room.UseCase) gin.HandlerFunc {
 			})
 			return
 		}
-		err := u.AddUser(roomID, i.UserID)
+		err := u.AddUser(c.Request.Context(), roomID, i.UserID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
@@ -111,7 +111,7 @@ func sendMessage(u room.UseCase) gin.HandlerFunc {
 		// This can be in a "shared" method
 		userContext, _ := c.Get("user")
 		user := userContext.(user.User)
-		err := u.SendMessage(roomID, user.ID, i.Message)
+		err := u.SendMessage(c.Request.Context(), roomID, user.ID, i.Message)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
@@ -153,7 +153,7 @@ func getMessages(u room.UseCase) gin.HandlerFunc {
 				return
 			}
 		}
-		messages, cursor, err := u.GetMessages(roomID, user.ID, cursorID, cursorTime)
+		messages, cursor, err := u.GetMessages(c.Request.Context(), roomID, user.ID, cursorID, cursorTime)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
@@ -184,7 +184,7 @@ func deleteMessage(u room.UseCase) gin.HandlerFunc {
 		// This can be in a "shared" method
 		userContext, _ := c.Get("user")
 		user := userContext.(user.User)
-		err := u.DeleteMessage(messageID, user.ID)
+		err := u.DeleteMessage(c.Request.Context(), messageID, user.ID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,

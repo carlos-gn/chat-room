@@ -2,6 +2,7 @@ package storage_user
 
 import (
 	"chat_room/user"
+	"context"
 	"database/sql"
 	"fmt"
 )
@@ -16,10 +17,10 @@ func New(db *sql.DB) *Storage {
 	}
 }
 
-func (s *Storage) Get(id string) (*user.User, error) {
+func (s *Storage) Get(ctx context.Context, id string) (*user.User, error) {
 	q := "SELECT id, name, created_at FROM users WHERE id = ? LIMIT 1;"
 
-	row := s.DB.QueryRow(q, id)
+	row := s.DB.QueryRowContext(ctx, q, id)
 	var u user.User
 	var err error
 	if err = row.Scan(&u.ID, &u.Name, &u.CreatedAt); err == sql.ErrNoRows {

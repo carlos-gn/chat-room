@@ -2,6 +2,7 @@ package room
 
 import (
 	"chat_room/user"
+	"context"
 	"fmt"
 	"time"
 
@@ -20,7 +21,7 @@ func NewService(rr RoomRepository, ur user.UserRepository) *RoomService {
 	}
 }
 
-func (s *RoomService) Create(name string) (string, error) {
+func (s *RoomService) Create(ctx context.Context, name string) (string, error) {
 	if name == "" {
 		return "", fmt.Errorf("Room name cannot be empty")
 	}
@@ -31,7 +32,7 @@ func (s *RoomService) Create(name string) (string, error) {
 		CreatedAt: time.Now().UTC(),
 	}
 
-	err := s.rr.Create(r)
+	err := s.rr.Create(ctx, r)
 	if err != nil {
 		return "", err
 	}
@@ -39,25 +40,25 @@ func (s *RoomService) Create(name string) (string, error) {
 	return r.ID, nil
 }
 
-func (s *RoomService) AddUser(id, userID string) error {
+func (s *RoomService) AddUser(ctx context.Context, id, userID string) error {
 	if id == "" || userID == "" {
 		return fmt.Errorf("Missing id or userID")
 	}
 
 	// Check if room exists
-	r, err := s.rr.Get(id)
+	r, err := s.rr.Get(ctx, id)
 	if err != nil {
 		return err
 	}
 
 	// Check if user exists
-	u, err := s.ur.Get(userID)
+	u, err := s.ur.Get(ctx, userID)
 	if err != nil {
 		return err
 	}
 
 	// Check if user is already part of the room
-	m, err := s.rr.UserExists(id, userID)
+	m, err := s.rr.UserExists(ctx, id, userID)
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,7 @@ func (s *RoomService) AddUser(id, userID string) error {
 		return fmt.Errorf("User is already member of the room")
 	}
 
-	err = s.rr.AddUser(r.ID, u.ID)
+	err = s.rr.AddUser(ctx, r.ID, u.ID)
 	if err != nil {
 		return err
 	}
@@ -74,17 +75,17 @@ func (s *RoomService) AddUser(id, userID string) error {
 	return nil
 }
 
-func (s *RoomService) SendMessage(roomID, userID, message string) error {
+func (s *RoomService) SendMessage(ctx context.Context, roomID, userID, message string) error {
 	// I can really skip room check and user check and see if the user is part of the group.
 	// Check if room exists
-	r, err := s.rr.Get(roomID)
+	r, err := s.rr.Get(ctx, roomID)
 	if err != nil {
 		return err
 	}
 
 	// Don't need to check if user exists, we have the middleware for that
 	// Check if user is already part of the room
-	m, err := s.rr.UserExists(r.ID, userID)
+	m, err := s.rr.UserExists(ctx, r.ID, userID)
 	if err != nil {
 		return err
 	}
@@ -101,7 +102,7 @@ func (s *RoomService) SendMessage(roomID, userID, message string) error {
 		CreatedAt: time.Now().UTC(),
 	}
 
-	err = s.rr.SendMessage(msg)
+	err = s.rr.SendMessage(ctx, msg)
 	if err != nil {
 		return err
 	}
@@ -109,13 +110,13 @@ func (s *RoomService) SendMessage(roomID, userID, message string) error {
 	return nil
 }
 
-func (s *RoomService) DeleteMessage(messageID, userID string) error {
-	m, err := s.rr.GetMessageForUser(messageID, userID)
+func (s *RoomService) DeleteMessage(ctx context.Context, messageID, userID string) error {
+	m, err := s.rr.GetMessageForUser(ctx, messageID, userID)
 	if err != nil {
 		return err
 	}
 
-	err = s.rr.DeleteMessage(m.ID, userID)
+	err = s.rr.DeleteMessage(ctx, m.ID, userID)
 	if err != nil {
 		return err
 	}
@@ -123,8 +124,8 @@ func (s *RoomService) DeleteMessage(messageID, userID string) error {
 	return nil
 }
 
-func (s *RoomService) GetMessages(roomID, userID, cursorID string, cursorTime time.Time) ([]Message, string, error) {
-	exists, err := s.rr.UserExists(roomID, userID)
+func (s *RoomService) GetMessages(ctx context.Context, roomID, userID, cursorID string, cursorTime time.Time) ([]Message, string, error) {
+	exists, err := s.rr.UserExists(ctx, roomID, userID)
 	if err != nil {
 		return nil, "", err
 	}
@@ -133,7 +134,7 @@ func (s *RoomService) GetMessages(roomID, userID, cursorID string, cursorTime ti
 		return nil, "", fmt.Errorf("No authorized to check the messages")
 	}
 
-	m, cursor, err := s.rr.GetMessages(roomID, cursorID, cursorTime)
+	m, cursor, err := s.rr.GetMessages(ctx, roomID, cursorID, cursorTime)
 	if err != nil {
 		return nil, "", err
 	}

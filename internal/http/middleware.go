@@ -14,7 +14,7 @@ func UserMiddleware(u user.UseCase) gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "user is not authorized"})
 			return
 		}
-		user, err := u.Get(xUserID)
+		user, err := u.Get(c.Request.Context(), xUserID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, "Something went wrong")
 		}
