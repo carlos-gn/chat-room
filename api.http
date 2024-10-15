@@ -1,6 +1,6 @@
 
 @URL = http://localhost:3000
-@roomID = 5571423a-439b-42c4-ba36-727a158a0b07
+@roomID = 425c2315-c15e-4f3e-a962-cb1f88e1acaf
 @messageID = f518ff7f-a11b-46f0-b7af-3f57f20d1d8f
 
 ### POST Create room 

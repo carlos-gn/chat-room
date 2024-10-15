@@ -9,14 +9,14 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE rooms (
   id TEXT NOT NULL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
-  created_at INTEGER NOT NULL
+  created_at DATETIME NOT NULL
 );
 
 
 CREATE TABLE users (
   id TEXT NOT NULL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
-  created_at INTEGER NOT NULL
+  created_at DATETIME NOT NULL
 );
 
 
@@ -33,7 +33,7 @@ CREATE TABLE room_members (
 CREATE TABLE messages (
   id TEXT NOT NULL PRIMARY KEY,
   content TEXT NOT NULL,
-  created_at INTEGER NOT NULL,
+  created_at DATETIME NOT NULL,
   creator_id TEXT NOT NULL, 
   room_id TEXT NOT NULL,
   FOREIGN KEY(room_id) REFERENCES rooms(id),
