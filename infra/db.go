@@ -7,6 +7,6 @@ import (
 )
 
 func NewDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "chat.sqlite")
+	db, err := sql.Open("sqlite3", "chat.sqlite?_time_format=sqlite")
 	return db, err
 }

@@ -122,3 +122,20 @@ func (s *RoomService) DeleteMessage(messageID, userID string) error {
 
 	return nil
 }
+
+func (s *RoomService) GetMessages(roomID, userID, cursorID string, cursorTime time.Time) ([]Message, string, error) {
+	exists, err := s.rr.UserExists(roomID, userID)
+	if err != nil {
+		return nil, "", err
+	}
+
+	if !exists {
+		return nil, "", fmt.Errorf("No authorized to check the messages")
+	}
+
+	m, cursor, err := s.rr.GetMessages(roomID, cursorID, cursorTime)
+	if err != nil {
+		return nil, "", err
+	}
+	return m, cursor, nil
+}

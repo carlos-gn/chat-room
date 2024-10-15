@@ -4,6 +4,7 @@ import (
 	"chat_room/room"
 	"chat_room/user"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +15,8 @@ func Handlers(u room.UseCase, r *gin.Engine) {
 		rr.POST("", createRoom(u))
 		rr.POST("/:roomID/members", addUser(u))
 		rr.POST("/:roomID/messages", sendMessage(u))
-		// We can pass the room id to improve the DB search here.
-		rr.DELETE("/messages/:messageID", deleteMessage(u))
+		rr.GET("/:roomID/messages", getMessages(u))
+		rr.DELETE("/:roomID/messages/:messageID", deleteMessage(u))
 	}
 }
 
@@ -120,6 +121,50 @@ func sendMessage(u room.UseCase) gin.HandlerFunc {
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
+		})
+	}
+}
+
+func getMessages(u room.UseCase) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		roomID := c.Param("roomID")
+
+		if roomID == "" {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"success": false,
+				"message": "wrong payload",
+			})
+			return
+		}
+
+		cursor := c.Query("cursor")
+		userContext, _ := c.Get("user")
+		user := userContext.(user.User)
+		var cursorTime time.Time
+		var cursorID string
+		var err error
+		if cursor != "" {
+			cursorTime, cursorID, err = DecodeCursor(cursor)
+			if err != nil {
+				c.JSON(http.StatusUnprocessableEntity, gin.H{
+					"success": false,
+					"message": "wrong cursor",
+				})
+				return
+			}
+		}
+		messages, cursor, err := u.GetMessages(roomID, user.ID, cursorID, cursorTime)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data":    messages,
+			"cursor":  cursor,
 		})
 	}
 }

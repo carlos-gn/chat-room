@@ -1,10 +1,12 @@
 package storage_room
 
 import (
+	"chat_room/internal/http"
 	"chat_room/room"
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/mattn/go-sqlite3"
 )
@@ -122,4 +124,53 @@ func (s *Storage) GetMessageForUser(id, userID string) (*room.Message, error) {
 	}
 
 	return &m, nil
+}
+
+func (s *Storage) GetMessages(id, cursorID string, cursorTime time.Time) ([]room.Message, string, error) {
+	const limit = 10
+
+	var q string
+	var rows *sql.Rows
+	var err error
+
+	if cursorID != "" && !cursorTime.IsZero() {
+		q = "SELECT id, content, creator_id, room_id, created_at FROM messages WHERE room_id = ? LIMIT ?;"
+		rows, err = s.DB.Query(q, id, limit+1)
+	} else {
+		q = `
+        SELECT id, content, creator_id, room_id, created_at FROM messages 
+        WHERE room_id = ? AND (messages.created_at, messages.id) > (?, ?) LIMIT ?;`
+		rows, err = s.DB.Query(q, id, cursorTime, cursorID, limit+1)
+	}
+
+	// TODO: Logs
+	if err != nil {
+		fmt.Println(err)
+		return nil, "", fmt.Errorf("Something went wrong getting the messages")
+	}
+	defer rows.Close()
+	var mm []room.Message
+	for rows.Next() {
+		var m room.Message
+		err = rows.Scan(&m.ID, &m.Content, &m.CreatorID, &m.RoomID, &m.CreatedAt)
+		if err != nil {
+			return nil, "", err
+		}
+		mm = append(mm, m)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, "", err
+	}
+
+	existsMore := len(mm) > limit
+	cursor := ""
+	if existsMore {
+		mm = mm[:limit]
+		lastTs := mm[limit-1]
+		cursor = http.EncodeCursor(lastTs.CreatedAt.UTC(), lastTs.ID)
+	}
+
+	return mm, cursor, nil
 }
