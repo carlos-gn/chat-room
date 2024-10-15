@@ -25,7 +25,7 @@ func (s *RoomService) Create(name string) (string, error) {
 		return "", fmt.Errorf("Room name cannot be empty")
 	}
 
-	r := &Room{
+	r := Room{
 		ID:        uuid.NewString(),
 		Name:      name,
 		CreatedAt: time.Now().UTC(),
@@ -56,20 +56,59 @@ func (s *RoomService) AddUser(id, userID string) error {
 		return err
 	}
 
-  // Check if user is already part of the room
-  m, err := s.rr.UserExists(id, userID)
-  if err != nil {
-    return err
-  }
+	// Check if user is already part of the room
+	m, err := s.rr.UserExists(id, userID)
+	if err != nil {
+		return err
+	}
 
-  if m {
-    return fmt.Errorf("User is already member of the room")
-  }
+	if m {
+		return fmt.Errorf("User is already member of the room")
+	}
 
-  err = s.rr.AddUser(r.ID, u.ID)
-  if err != nil {
-    return err
-  }
+	err = s.rr.AddUser(r.ID, u.ID)
+	if err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func (s *RoomService) SendMessage(roomID, userID, message string) error {
+	// I can really skip room check and user check and see if the user is part of the group.
+	// Check if room exists
+	r, err := s.rr.Get(roomID)
+	if err != nil {
+		return err
+	}
+
+	// Don't need to check if user exists, we have the middleware for that
+	// Check if user is already part of the room
+	m, err := s.rr.UserExists(r.ID, userID)
+	if err != nil {
+		return err
+	}
+
+	if !m {
+		return fmt.Errorf("Cannot send messages to this room")
+	}
+
+	msg := Message{
+		ID:        uuid.NewString(),
+		RoomID:    r.ID,
+		CreatorID: userID,
+		Content:   message,
+		CreatedAt: time.Now().UTC(),
+	}
+
+	err = s.rr.SendMessage(msg)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *RoomService) DeleteMessage(roomID, messageID string) error {
 	return nil
 }

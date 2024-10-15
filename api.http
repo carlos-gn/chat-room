@@ -1,0 +1,38 @@
+
+@URL = http://localhost:3000
+@roomID = b6d6e869-f050-427b-a463-2f4680cdf379
+@messageID = 
+
+### POST Create room 
+POST {{URL}}/room/
+Content-Type: application/json
+x-user-id: random-uuid
+
+{
+  "name": "sala3"
+}
+
+
+### POST Add user/member
+POST {{URL}}/room/{{roomID}}/member
+Content-Type: application/json
+x-user-id: random-uuid
+
+{
+  "user_id": "random-uuid"
+}
+
+
+### POST Send message
+POST {{URL}}/room/{{roomID}}/message
+Content-Type: application/json
+x-user-id: random-uuid
+
+{
+  "message": "Hello world! Happy to be here"
+}
+
+### DELETE Remove message
+DELETE {{URL}}/room/{{roomID}}/message/{{messageID}}
+Content-Type: application/json
+x-user-id: random-uuid
