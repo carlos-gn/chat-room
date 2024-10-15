@@ -17,11 +17,11 @@ type RoomMember struct {
 }
 
 type Message struct {
-	ID        string
-	CreatorID string
-	Content   string
-	RoomID    string
-	CreatedAt time.Time
+	ID        string    `json:"id"`
+	CreatorID string    `json:"creator_id"`
+	Content   string    `json:"content"`
+	RoomID    string    `json:"room_id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type UseCase interface {

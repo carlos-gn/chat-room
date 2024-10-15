@@ -134,13 +134,13 @@ func (s *Storage) GetMessages(id, cursorID string, cursorTime time.Time) ([]room
 	var err error
 
 	if cursorID != "" && !cursorTime.IsZero() {
-		q = "SELECT id, content, creator_id, room_id, created_at FROM messages WHERE room_id = ? LIMIT ?;"
-		rows, err = s.DB.Query(q, id, limit+1)
-	} else {
 		q = `
         SELECT id, content, creator_id, room_id, created_at FROM messages 
         WHERE room_id = ? AND (messages.created_at, messages.id) > (?, ?) LIMIT ?;`
 		rows, err = s.DB.Query(q, id, cursorTime, cursorID, limit+1)
+	} else {
+		q = "SELECT id, content, creator_id, room_id, created_at FROM messages WHERE room_id = ? LIMIT ?;"
+		rows, err = s.DB.Query(q, id, limit+1)
 	}
 
 	// TODO: Logs
