@@ -8,7 +8,6 @@ import (
 	storage_user "chat_room/user/sqlite"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -43,16 +42,22 @@ var _ = Describe("Room API", Ordered, func() {
 	})
 
 	Describe("POST Create room", func() {
-		Context("there's not room with that name", func() {
-			It("should create the room", func(ctx SpecContext) {
-				payload, _ := json.Marshal(map[string]string{"name": "Room1"})
-				req, _ := http.NewRequest("POST", "/rooms", bytes.NewBuffer(payload))
-				req.Header.Add("Content-Type", "application/json")
-				resp := httptest.NewRecorder()
-				r.ServeHTTP(resp, req)
-				fmt.Println(resp)
-				Expect(resp.Code).To(Equal(http.StatusOK))
-			})
+		It("can create the room", func(ctx SpecContext) {
+			payload, _ := json.Marshal(map[string]string{"name": "Room1"})
+			req, _ := http.NewRequest("POST", "/rooms", bytes.NewBuffer(payload))
+			req.Header.Add("Content-Type", "application/json")
+			resp := httptest.NewRecorder()
+			r.ServeHTTP(resp, req)
+			Expect(resp.Code).To(Equal(http.StatusOK))
+		})
+
+		It("cannot create the room with the same name", func(ctx SpecContext) {
+			payload, _ := json.Marshal(map[string]string{"name": "Room1"})
+			req, _ := http.NewRequest("POST", "/rooms", bytes.NewBuffer(payload))
+			req.Header.Add("Content-Type", "application/json")
+			resp := httptest.NewRecorder()
+			r.ServeHTTP(resp, req)
+			Expect(resp.Code).To(Equal(http.StatusInternalServerError))
 		})
 	})
 })
