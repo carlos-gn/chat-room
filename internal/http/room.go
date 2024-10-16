@@ -12,11 +12,11 @@ import (
 func Handlers(u room.UseCase, r *gin.Engine) {
 	rr := r.Group("/rooms")
 	{
-		rr.POST("", createRoom(u))
-		rr.POST("/:roomID/members", addUser(u))
-		rr.POST("/:roomID/messages", sendMessage(u))
-		rr.GET("/:roomID/messages", getMessages(u))
-		rr.DELETE("/:roomID/messages/:messageID", deleteMessage(u))
+		rr.POST("", CreateRoom(u))
+		rr.POST("/:roomID/members", AddUser(u))
+		rr.POST("/:roomID/messages", SendMessage(u))
+		rr.GET("/:roomID/messages", GetMessages(u))
+		rr.DELETE("/:roomID/messages/:messageID", DeleteMessage(u))
 	}
 }
 
@@ -24,7 +24,7 @@ type createRoomInput struct {
 	Name string `json:"name" binding:"required"`
 }
 
-func createRoom(u room.UseCase) gin.HandlerFunc {
+func CreateRoom(u room.UseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		i := createRoomInput{}
 		if err := c.ShouldBindJSON(&i); err != nil {
@@ -53,7 +53,7 @@ type addUserInput struct {
 	UserID string `json:"user_id" binding:"required"`
 }
 
-func addUser(u room.UseCase) gin.HandlerFunc {
+func AddUser(u room.UseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("roomID")
 		if roomID == "" {
@@ -89,7 +89,7 @@ type sendMessageInput struct {
 	Message string `json:"message" binding:"required"`
 }
 
-func sendMessage(u room.UseCase) gin.HandlerFunc {
+func SendMessage(u room.UseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("roomID")
 		if roomID == "" {
@@ -125,7 +125,7 @@ func sendMessage(u room.UseCase) gin.HandlerFunc {
 	}
 }
 
-func getMessages(u room.UseCase) gin.HandlerFunc {
+func GetMessages(u room.UseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("roomID")
 
@@ -169,7 +169,7 @@ func getMessages(u room.UseCase) gin.HandlerFunc {
 	}
 }
 
-func deleteMessage(u room.UseCase) gin.HandlerFunc {
+func DeleteMessage(u room.UseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		messageID := c.Param("messageID")
 
