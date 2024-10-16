@@ -1,8 +1,14 @@
 dev:
 	air
 
+setup-db:
+	touch test_chat.sqlite && make migrate
+
+setup-test-db:
+	touch test_chat.sqlite && make migrate
+
 migrate:
-	sqlite < migrations/init.sql
+	sqlite3 test_chat.sqlite < migrations/init.sql
 
 build: 
 	go build .
