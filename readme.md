@@ -24,3 +24,9 @@ make setup-test-db
 # Run test suite
 make test
 ```
+
+Run with Docker
+```sh
+make docker-build
+make docker-run
+```

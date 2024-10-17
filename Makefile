@@ -17,10 +17,10 @@ build:
 	go build .
 
 docker-build:
-	docker build --tag go-api .
+	docker build --tag chat-room-api .
 
 docker-run:
-	docker run --publish 3000:3000 go-api
+	docker run --publish 3000:3000 chat-room-api
 
 test:
 	ginkgo -vv ./...
